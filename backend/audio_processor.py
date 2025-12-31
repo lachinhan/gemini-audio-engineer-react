@@ -1,4 +1,5 @@
 import io
+import os
 import tempfile
 from typing import Tuple
 
@@ -6,7 +7,17 @@ import librosa
 import librosa.display
 import matplotlib.pyplot as plt
 import numpy as np
+from dotenv import load_dotenv
 from pydub import AudioSegment
+
+# Load environment variables and configure FFmpeg path for pydub
+load_dotenv()
+
+_ffmpeg_path = os.getenv("FFMPEG_PATH")
+if _ffmpeg_path and os.path.isdir(_ffmpeg_path):
+    # pydub looks for ffmpeg/ffprobe executables in this directory
+    AudioSegment.converter = os.path.join(_ffmpeg_path, "ffmpeg.exe")
+    AudioSegment.ffprobe = os.path.join(_ffmpeg_path, "ffprobe.exe")
 
 
 def trim_audio_to_temp(
