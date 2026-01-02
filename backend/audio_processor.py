@@ -55,7 +55,7 @@ def trim_audio_to_temp(
 def generate_mel_spectrogram_png(
     audio_path: str,
     n_mels: int = 128,
-    fmax: int = 8000,
+    fmax: int = 16000,
 ) -> bytes:
     """
     Generate Mel spectrogram (PNG bytes).

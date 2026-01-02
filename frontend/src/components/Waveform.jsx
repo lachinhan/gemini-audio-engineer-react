@@ -38,6 +38,12 @@ export default function Waveform({ file, onSelectionChange }) {
       container: containerRef.current,
       height: 120,
       normalize: true,
+      waveColor: "#475569",
+      progressColor: "#818cf8",
+      cursorColor: "#2dd4bf",
+      barWidth: 2,
+      barGap: 3,
+      barRadius: 3,
       plugins: [wsRegions],
     });
 
@@ -51,9 +57,9 @@ export default function Waveform({ file, onSelectionChange }) {
       const dur = ws.getDuration();
       setDuration(dur);
 
-      // Default region: first 30s (or full duration if shorter)
+      // Default region: full duration (capped at 10 minutes for safety)
       const start = 0;
-      const end = Math.min(dur, 30);
+      const end = Math.min(dur, 600);
 
       // 4. Add region via the plugin instance
       const r = wsRegions.addRegion({
@@ -61,7 +67,7 @@ export default function Waveform({ file, onSelectionChange }) {
         end,
         drag: true,
         resize: true,
-        color: "rgba(0, 0, 0, 0.1)", // Optional: better visibility
+        color: "rgba(129, 140, 248, 0.15)",
       });
 
       regionRef.current = r;
@@ -108,9 +114,16 @@ export default function Waveform({ file, onSelectionChange }) {
     const ws = wsRef.current;
     const region = regionRef.current;
     if (!ws || !region) return;
-
-    // v7: ws.play(start, end)
     ws.play(region.start, region.end);
+  };
+
+  const selectFull = () => {
+    const ws = wsRef.current;
+    const region = regionRef.current;
+    if (!ws || !region) return;
+    const dur = ws.getDuration();
+    region.setOptions({ start: 0, end: dur });
+    onSelectionChange?.({ startSec: 0, endSec: dur, durationSec: dur });
   };
 
   return (
@@ -123,11 +136,14 @@ export default function Waveform({ file, onSelectionChange }) {
         <button className="btn secondary" disabled={!isReady} onClick={playRegion}>
           Play Selection
         </button>
+        <button className="btn secondary" disabled={!isReady} onClick={selectFull}>
+          Select Full
+        </button>
         <span className="pill">Duration: {duration.toFixed(2)}s</span>
-        <span className="pill">Drag/resize the region to set selection</span>
+        <span className="pill">Drag/resize region to select</span>
       </div>
       <div className="muted">
-        Tip: if you don’t see a selection box, wait for the waveform to finish loading.
+        Tip: Default selection is the full song (up to 10 min).
       </div>
     </div>
   );
