@@ -27,6 +27,12 @@ uvicorn app:app --reload --port 8000
 
 Health check: open `http://localhost:8000/health`
 
+### FFmpeg dependency (Windows)
+Install via WinGet:
+```powershell
+winget install Gyan.FFmpeg
+```
+
 ## 2) Frontend setup
 
 ```bash
