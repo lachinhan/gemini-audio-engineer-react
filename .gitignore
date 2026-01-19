@@ -2,6 +2,7 @@
 .env
 .env.local
 .env.*.local
+Docs/Instructions/
 
 # Python
 .venv/
@@ -50,3 +51,5 @@ Thumbs.db
 *.tmp
 *.temp
 *.log
+*.mid
+

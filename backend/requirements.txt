@@ -9,3 +9,4 @@ pydub
 python-dotenv
 scipy
 openai
+mido

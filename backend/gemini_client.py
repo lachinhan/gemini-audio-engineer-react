@@ -14,15 +14,22 @@ load_dotenv()
 # Dict[str, genai.chats.Chat]
 _sessions: Dict[str, object] = {}
 
+# Singleton client instance - keeps httpx connection alive across sessions
+_client: Optional[genai.Client] = None
+
 
 def _get_client() -> genai.Client:
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise RuntimeError(
-            "Missing GEMINI_API_KEY. Create backend/.env with:\n\n"
-            "GEMINI_API_KEY=YOUR_KEY_HERE\n"
-        )
-    return genai.Client(api_key=api_key)
+    """Get or create a singleton Gemini client instance."""
+    global _client
+    if _client is None:
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise RuntimeError(
+                "Missing GEMINI_API_KEY. Create backend/.env with:\n\n"
+                "GEMINI_API_KEY=YOUR_KEY_HERE\n"
+            )
+        _client = genai.Client(api_key=api_key)
+    return _client
 
 
 def start_audio_chat_session(
@@ -86,3 +93,4 @@ def send_chat_message(session_id: str, user_message: str) -> str:
 
     response = chat.send_message(message=user_message)
     return response.text
+

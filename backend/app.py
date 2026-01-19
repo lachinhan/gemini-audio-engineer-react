@@ -5,6 +5,7 @@ from typing import Optional
 
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from audio_processor import trim_audio_to_temp, generate_mel_spectrogram_png
 from gemini_client import (
@@ -15,11 +16,19 @@ from openai_client import (
     start_audio_chat_session as openai_start_session,
     send_chat_message as openai_send_message,
 )
+from midi_engine import extract_and_generate_midi
 
 app = FastAPI(title="Gemini Audio Engineer API")
 
 # Track which provider each session uses for follow-up routing
 _session_providers: dict[str, str] = {}  # session_id -> "gemini" | "openai"
+
+# Create static directory for MIDI files
+MIDI_OUTPUT_DIR = "static/midi"
+os.makedirs(MIDI_OUTPUT_DIR, exist_ok=True)
+
+# Mount static files for MIDI downloads
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Dev CORS (Vite default)
 app.add_middleware(
@@ -104,10 +113,15 @@ def analyze(
         )
         _session_providers[session_id] = "gemini"
 
+    # Process MIDI data from response (Producer mode)
+    clean_advice, midi_filename = extract_and_generate_midi(advice, MIDI_OUTPUT_DIR)
+    midi_url = f"/static/midi/{midi_filename}" if midi_filename else None
+
     return {
         "sessionId": session_id,
-        "advice": advice,
+        "advice": clean_advice,
         "spectrogramPngBase64": base64.b64encode(spec_png).decode("utf-8"),
+        "midiDownloadUrl": midi_url,
     }
 
 
@@ -124,4 +138,13 @@ def chat_reply(
         reply = openai_send_message(sessionId, message)
     else:
         reply = gemini_send_message(sessionId, message)
-    return {"reply": reply}
+
+    # Process MIDI data from response
+    clean_reply, midi_filename = extract_and_generate_midi(reply, MIDI_OUTPUT_DIR)
+    midi_url = f"/static/midi/{midi_filename}" if midi_filename else None
+
+    return {
+        "reply": clean_reply,
+        "midiDownloadUrl": midi_url,
+    }
+

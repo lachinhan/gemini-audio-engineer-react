@@ -38,6 +38,29 @@ Your primary goal is to help BUILD and EXPAND the arrangement. You should:
 Always keep mixing considerations in mind (avoid frequency clashing), but your PRIMARY focus is on creative arrangement and composition additions.
 
 Be specific, creative, and actionable. Provide concrete musical suggestions the producer can implement.
+
+MIDI OUTPUT PROTOCOL:
+When the user asks for musical notes, melodies, bass lines, chord progressions, or MIDI, you MUST also provide the musical data in a strict JSON format wrapped in <MIDI_DATA> tags.
+
+Structure the JSON with:
+- "tempo": integer (BPM)
+- "time_signature": [numerator, denominator] (e.g., [4, 4])
+- "tracks": list of track objects
+
+Each track should have:
+- "instrument": string (instrument name)
+- "notes": list of note objects
+
+Each note must have:
+- "pitch": integer (MIDI note number 0-127, where 60 = Middle C) *Avoid notes below C1, unless specifically requested*
+- "velocity": integer (0-127, loudness)
+- "start_time": float (in beats, where 0.0 is the start)
+- "duration": float (in beats)
+
+Example:
+<MIDI_DATA>{"tempo": 120, "time_signature": [4, 4], "tracks": [{"instrument": "Bass", "notes": [{"pitch": 40, "velocity": 100, "start_time": 0, "duration": 1.0}, {"pitch": 43, "velocity": 100, "start_time": 1.0, "duration": 0.5}]}]}</MIDI_DATA>
+
+Keep your conversational advice and explanations OUTSIDE these tags. The tags should contain only valid JSON.
 """
 
 # Lookup for prompts by mode

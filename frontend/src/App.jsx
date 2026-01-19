@@ -114,7 +114,11 @@ export default function App() {
 
       setSessionId(data.sessionId);
       setSpectrogramB64(data.spectrogramPngBase64);
-      setChatMessages(prev => [...prev, { role: "model", text: data.advice }]);
+      setChatMessages(prev => [...prev, {
+        role: "model",
+        text: data.advice,
+        midiDownloadUrl: data.midiDownloadUrl
+      }]);
     } catch (e) {
       setError(e?.message || String(e));
       setChatMessages(prev => prev.filter(m => m.text !== prompt)); // Remove failed prompt
@@ -133,7 +137,11 @@ export default function App() {
 
     try {
       const data = await sendChatMessage(sessionId, msg);
-      setChatMessages(prev => [...prev, { role: "model", text: data.reply }]);
+      setChatMessages(prev => [...prev, {
+        role: "model",
+        text: data.reply,
+        midiDownloadUrl: data.midiDownloadUrl
+      }]);
     } catch (e) {
       setError(e?.message || String(e));
     } finally {
@@ -315,7 +323,7 @@ export default function App() {
 
           {/* Chat Section - now directly below settings */}
           <section className="card chat-container">
-            <label>Engineer Consultation</label>
+            <label>{mode === "engineer" ? "Engineer Consultation" : "Producer Session"}</label>
             <div className="chat-messages">
               {chatMessages.length === 0 && (
                 <div className="muted" style={{ textAlign: "center", marginTop: "40px" }}>
@@ -329,6 +337,23 @@ export default function App() {
                     {msg.role === "user" ? "You" : (mode === "engineer" ? "Engineer" : "Producer")}
                   </div>
                   <div style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</div>
+
+                  {/* MIDI Download Button */}
+                  {msg.midiDownloadUrl && (
+                    <div className="midi-attachment">
+                      <div className="midi-header">
+                        <span className="midi-icon">🎹</span>
+                        <span className="midi-title">MIDI File Generated</span>
+                      </div>
+                      <a
+                        href={`http://localhost:8000${msg.midiDownloadUrl}`}
+                        download
+                        className="btn midi-download-btn"
+                      >
+                        Download .MID File
+                      </a>
+                    </div>
+                  )}
                 </div>
               ))}
               <div ref={chatEndRef} />
