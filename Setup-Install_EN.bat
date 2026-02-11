@@ -36,21 +36,37 @@ cd backend
 if not exist .venv (
     echo - Creating virtual environment (.venv)...
     python -m venv .venv
-) else (
-    echo - Virtual environment already exists.
 )
 
 :: Install dependencies
-echo - Installing Python dependencies (this may take a few minutes)...
+echo - Installing Python dependencies...
 .venv\Scripts\python.exe -m pip install --upgrade pip
 .venv\Scripts\pip install -r requirements.txt
 
-:: Create .env file if it doesn't exist
+:: Create .env file
 if not exist .env (
     echo - Creating .env file from example...
     copy .env.example .env
+)
+echo.
+
+:: --- STEP 2.5: API KEY CONFIGURATION ---
+echo --------------------------------------------------------
+echo [IMPORTANT] API KEY CONFIGURATION
+echo --------------------------------------------------------
+echo Please enter your Google Gemini API Key below.
+echo (If you don't have it, press Enter to skip and edit manually later)
+echo.
+set /p API_KEY="> Paste your GEMINI_API_KEY here: "
+
+if "%API_KEY%" neq "" (
+    echo.
+    echo - Saving API Key to backend/.env...
+    :: Use PowerShell to safely replace the placeholder in the .env file
+    powershell -Command "(gc .env) -replace 'GEMINI_API_KEY=', 'GEMINI_API_KEY=%API_KEY%' | Set-Content .env"
+    echo - API Key saved successfully!
 ) else (
-    echo - File .env already exists.
+    echo - Skipped. You must edit backend/.env manually.
 )
 
 :: Go back to root
@@ -77,7 +93,6 @@ where ffmpeg >nul 2>&1
 if %errorlevel% neq 0 (
     echo - FFmpeg not found. Attempting automatic installation via Winget...
     winget install Gyan.FFmpeg
-    echo Note: If this fails, please install FFmpeg manually.
 ) else (
     echo - FFmpeg is already installed.
 )
@@ -88,8 +103,6 @@ echo ========================================================
 echo                  INSTALLATION COMPLETE!
 echo ========================================================
 echo.
-echo IMPORTANT NEXT STEPS:
-echo 1. Open the file "backend/.env" and paste your GEMINI API KEY.
-echo 2. Run "Start-App.bat" to launch the application.
+echo Setup is finished. You can now run "Start-App.bat" to use the tool.
 echo.
 pause

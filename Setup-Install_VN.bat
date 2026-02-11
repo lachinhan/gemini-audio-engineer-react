@@ -1,95 +1,109 @@
 @echo off
-TITLE Gemini Audio Engineer - Auto Installer
+TITLE Tu Dong Cai Dat Gemini Audio Engineer
 COLOR 0A
 
-:: 1. Đảm bảo script chạy đúng thư mục hiện tại
+:: Chuyen ve thu muc hien tai de chay lenh cho dung
 cd /d "%~dp0"
 
 echo ========================================================
-echo      TU DONG CAI DAT MOI TRUONG GEMINI AUDIO ENGINEER
+echo      TU DONG CAI DAT GEMINI AUDIO ENGINEER
 echo ========================================================
 echo.
 
-:: --- PHẦN 1: KIỂM TRA CÔNG CỤ ---
-echo [1/5] Kiem tra cac cong cu can thiet...
+:: --- BUOC 1: KIEM TRA CONG CU ---
+echo [1/5] Dang kiem tra cac cong cu can thiet...
+
 python --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [LOI] Ban chua cai Python! Hay cai Python 3.10+ truoc.
+    echo [LOI] May ban chua cai Python! Vui long cai Python 3.10 tro len truoc.
     pause
     exit
 )
 
 npm -v >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [LOI] Ban chua cai Node.js! Hay cai Node.js truoc.
+    echo [LOI] May ban chua cai Node.js! Vui long cai Node.js truoc.
     pause
     exit
 )
-echo -> Cong cu OK.
+echo - Kiem tra cong cu: OK.
 echo.
 
-:: --- PHẦN 2: CÀI ĐẶT BACKEND ---
-echo [2/5] Thiet lap Backend (Python)...
+:: --- BUOC 2: CAI DAT BACKEND ---
+echo [2/5] Dang thiet lap Backend (Python)...
 cd backend
 
-:: Tạo môi trường ảo nếu chưa có
+:: Tao moi truong ao neu chua co
 if not exist .venv (
-    echo -> Dang tao moi truong ao (.venv)...
+    echo - Dang tao moi truong ao (.venv)...
     python -m venv .venv
-) else (
-    echo -> Moi truong ao da ton tai.
 )
 
-:: Cài đặt thư viện vào môi trường ảo
-echo -> Dang cai dat thu vien Python (co the mat vai phut)...
+:: Cai thu vien
+echo - Dang cai dat thu vien Python (buoc nay hoi lau chut)...
 .venv\Scripts\python.exe -m pip install --upgrade pip
 .venv\Scripts\pip install -r requirements.txt
 
-:: Tạo file .env nếu chưa có
+:: Tao file .env neu chua co
 if not exist .env (
-    echo -> Dang tao file .env tu file mau...
-    copy .env.example .env
-) else (
-    echo -> File .env da ton tai.
+    echo - Dang tao file cau hinh .env...
+    copy .env.example .env >nul
 )
-
-:: Quay lại thư mục gốc
-cd ..
-echo -> Backend OK.
 echo.
 
-:: --- PHẦN 3: CÀI ĐẶT FRONTEND ---
-echo [3/5] Thiet lap Frontend (Node.js)...
+:: --- BUOC 2.5: NHAP API KEY (MOI) ---
+echo --------------------------------------------------------
+echo [QUAN TRONG] CAU HINH API KEY
+echo --------------------------------------------------------
+echo Vui long dan (Paste) ma Google Gemini API Key cua ban vao duoi day.
+echo (Neu chua co, cu bam Enter de bo qua va tu dien sau)
+echo.
+set /p API_KEY="> Dan API Key vao day va bam Enter: "
+
+if "%API_KEY%" neq "" (
+    echo.
+    echo - Dang luu API Key vao file backend/.env...
+    :: Dung PowerShell de thay the dong key trong bang key cua ban
+    powershell -Command "(gc .env) -replace 'GEMINI_API_KEY=', 'GEMINI_API_KEY=%API_KEY%' | Set-Content .env"
+    echo - Da luu API Key thanh cong!
+) else (
+    echo - Da bo qua. Ban nho tu mo file backend/.env de dien sau nhe.
+)
+
+:: Quay lai thu muc goc
+cd ..
+echo - Cai dat Backend: OK.
+echo.
+
+:: --- BUOC 3: CAI DAT FRONTEND ---
+echo [3/5] Dang thiet lap Frontend (Node.js)...
 cd frontend
 
-:: Cài đặt node_modules
-echo -> Dang cai dat thu vien Node.js (vui long doi)...
+:: Cai thu vien Node
+echo - Dang cai dat thu vien giao dien (vui long doi)...
 call npm install
 
-:: Quay lại thư mục gốc
+:: Quay lai thu muc goc
 cd ..
-echo -> Frontend OK.
+echo - Cai dat Frontend: OK.
 echo.
 
-:: --- PHẦN 4: CÀI ĐẶT FFMPEG (Tùy chọn) ---
-echo [4/5] Kiem tra FFmpeg...
+:: --- BUOC 4: KIEM TRA FFMPEG ---
+echo [4/5] Dang kiem tra FFmpeg...
 where ffmpeg >nul 2>&1
 if %errorlevel% neq 0 (
-    echo -> Ban chua cai FFmpeg. Dang thu cai dat tu dong bang Winget...
+    echo - Khong tim thay FFmpeg. Dang thu cai tu dong bang Winget...
     winget install Gyan.FFmpeg
-    echo Luu y: Neu cai dat FFmpeg that bai, hay cai thu cong.
 ) else (
-    echo -> FFmpeg da duoc cai dat.
+    echo - FFmpeg da co san trong may.
 )
 echo.
 
-:: --- PHẦN 5: HOÀN TẤT ---
+:: --- BUOC 5: HOAN TAT ---
 echo ========================================================
 echo                  CAI DAT HOAN TAT!
 echo ========================================================
 echo.
-echo QUAN TRONG:
-echo 1. Hay mo file "backend/.env" va dien API KEY cua ban vao.
-echo 2. Sau do chay file "Start-App.bat" de bat dau su dung.
+echo Bay gio ban co the chay file "Start-App.bat" de su dung ngay.
 echo.
 pause
